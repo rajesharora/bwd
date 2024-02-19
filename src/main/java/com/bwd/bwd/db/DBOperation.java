@@ -1,6 +1,7 @@
 package com.bwd.bwd.db;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -24,7 +25,11 @@ public class DBOperation {
 	
 	Connection con;
 	Statement stmt;
+	PreparedStatement pstmt;
 	ResultSet rs;		
+	
+	int statusCode;	
+	private int countUpdated;
 	
 	public DBOperation()
 	{
@@ -51,6 +56,28 @@ public class DBOperation {
 			se.printStackTrace(System.err);
 		}
 	}	
+
+	public void preparedSelectQuery(String sqlSelect)
+	{		
+		try
+		{
+			pstmt=con.prepareStatement(sqlSelect);			
+		}catch(SQLException se){
+			se.printStackTrace(System.err);
+		}
+	}	
+
+	public void executeSelectQuery(String findValue)
+	{		
+		try
+		{
+			System.out.println(findValue);
+			pstmt.setString(1, "%"+ findValue +"%");			
+			rs=pstmt.executeQuery();
+		}catch(SQLException se){
+			se.printStackTrace(System.err);
+		}
+	}		
 	
 	public String getTitle(String str)
 	{
@@ -126,7 +153,10 @@ public class DBOperation {
 			}
 			numberOfRow = cntRow;
 			rs.close();
-			stmt.close();						
+			if(stmt != null)
+			{
+				stmt.close();
+			}
 		}catch(SQLException se){
 			se.printStackTrace(System.err);
 		}
@@ -167,13 +197,14 @@ public class DBOperation {
 		try
 		{
 			stmt=con.createStatement();
-//			System.out.println(sqlUpdate);
-			int countInserted = stmt.executeUpdate(sqlUpdate);
+			//			System.out.println(sqlUpdate);
+			countUpdated = stmt.executeUpdate(sqlUpdate);
+			statusCode = 1;
 		} catch(SQLException ex) {
-	         ex.printStackTrace();
-	      }
-		
-	}	
+			//statusCode = 0;
+			ex.printStackTrace();
+		}
+	}
 	
 	public void deleteRecord(String sqlDelete)
 	{
@@ -187,6 +218,22 @@ public class DBOperation {
 	      }
 		
 	}	
+	
+	public int getCountUpdated() {
+		return countUpdated;
+	}
+
+	public void setCountUpdated(int countUpdated) {
+		this.countUpdated = countUpdated;
+	}
+	
+	public int getStatusCode() {
+		return statusCode;
+	}
+
+	public void setStatusCode(int statusCode) {
+		this.statusCode = statusCode;
+	}
 	
 	public static void main(String [] args)
 	{
