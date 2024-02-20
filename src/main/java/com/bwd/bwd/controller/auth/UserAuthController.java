@@ -39,23 +39,24 @@ import io.jsonwebtoken.Claims;
 @CrossOrigin("*")
 @RequestMapping(path = "/auth", produces = "application/json")
 @RestController
+
 public class UserAuthController {
-
+	
 	String 	tokenType = "Bearer";
-
+	
 	@Autowired
 	OauthClientsRepo ocr;	
-
+	
 	@Autowired
 	UserAccountsAuthRepo uaar;	
-
+	
 	@Autowired
 	UserEmailAuthRepo uer;	
-
+	
 	@GetMapping("/token")
 	public ResponseEntity<TokenResponse> generateBasicToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
 		ResponseEntity<TokenResponse> entity = null;
-
+		
 		String[] parts = authorizationHeader.split(" ");
 
 		String tokenType = parts[0];
@@ -76,7 +77,7 @@ public class UserAuthController {
 		}
 		return entity;		
 	}		
-
+	
 	@PostMapping("/validate/user")
 	public ResponseEntity<AuthTokenResponse> validateUserWithToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
 			@RequestBody LoginData data) {
@@ -86,20 +87,20 @@ public class UserAuthController {
 		TokenResponse tr = new TokenResponse();
 		AuthResponse ar = new AuthResponse();
 		AuthInfo ai = new AuthInfo();
-
+		
 		ResponseEntity<AuthTokenResponse> entity = null;
 		HttpHeaders headers = new HttpHeaders();
-
+		
 		ResponseEntity<TokenResponse> entityToken = null;
 		ResponseEntity<AuthResponse> entityAuth = null;
-
+		
 		entityToken = validateBearerToken(authorizationHeader);
-
+		
 		tr = entityToken.getBody();		
 		StatusResponse srToken = tr.getStatus();		
 		boolean validToken = srToken.isValid();
 		int statuscodeToken = srToken.getStatusCode();
-
+		
 		entityAuth = validateUser(data);	
 		ar = entityAuth.getBody();
 		DataResponse dr = ar.getData();
@@ -107,15 +108,15 @@ public class UserAuthController {
 		StatusResponse srAuth = ar.getStatus();		
 		boolean validAuth = srAuth.isValid();	
 		boolean isUpdateToken = false;
-		/*		 
+	/*		 
 		 StatusCode - 0    :    Unauthentic User with Unauthentic Token
 		 StatusCode - 1    :    Authentic User with Authentic Token		valid - true
 		 StatusCode - 2    :    Authentic User with Expired Token
 		 StatusCode - 3    :    Unauthentic User with Authentic Token
 		 StatusCode - 4    :    Unauthentic User with Expired Token
-
-		 */
-
+		 		 
+	*/
+		
 		if(validToken)
 		{			
 			if(validAuth)
@@ -141,7 +142,7 @@ public class UserAuthController {
 				{
 					sr.setMessage("Authentic User with Expired Token");
 					ar = null;
-
+					
 					sr.setStatusCode(2);
 				}
 				else
@@ -164,37 +165,37 @@ public class UserAuthController {
 				}
 			}			
 		}	
-
+		
 		if(isUpdateToken)
 		{
 			AuthServiceImpl as = new AuthServiceImpl();
 			String useridToken = as.generateUserid(ai.getUseraccountid());
 			UserAccountsAuth user = uaar.getReferenceById(ai.getUseraccountid()); //= as.updateUser(ai.getUseraccountid(), useridToken);
-			user.setUserid(useridToken);
-			// Save the updated user back to the database
-			uaar.save(user);
+			 user.setUserid(useridToken);
+			 // Save the updated user back to the database
+	        uaar.save(user);
 			ai.setUserid(user.getUserid());
 			dr.setUserinfo(ai);
 			ar.setData(dr);
 			System.out.println(useridToken);
 		}
-
+		
 		atr.setAuthData(ar);
 		atr.setStatus(sr);
-
+		
 		entity = new ResponseEntity<>(atr, headers, HttpStatus.OK);
-
+		
 		return entity;		
 	}
 
 	public ResponseEntity<TokenResponse> generateToken(@RequestBody OauthClients data, String tokenType) {
-
+		
 		this.tokenType = tokenType;
 		ResponseEntity<TokenResponse> entity = generateToken(data);
 
 		return entity;
 	}	
-
+	
 	public ResponseEntity<TokenResponse> generateToken(@RequestBody OauthClients data) {
 
 		HttpHeaders headers = new HttpHeaders();
@@ -243,14 +244,14 @@ public class UserAuthController {
 
 		return entity;
 	}
-
+	
 	public Long validateRoute(@RequestBody OauthClients data) {
 		Long found = 0L;
 		found = ocr.isRecordExist(data.getUsername(), data.getPassword());
 		System.out.println("fOUND = " + found + " - " + data.getUsername() + " - " + data.getPassword());
 		return found;
 	}	
-
+	
 	public ResponseEntity<TokenResponse> validateBearerToken(
 			@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
 		JWTServiceImpl jsi = new JWTServiceImpl();
@@ -276,7 +277,7 @@ public class UserAuthController {
 			TokenInfo ti = null;
 			TokenInfoReq tir = null;
 
-			//			ti = jsi.parseToken(token,tokenType);
+//			ti = jsi.parseToken(token,tokenType);
 			tir = jsi.parseToken(token,tokenType);
 			long currentSystemTime = System.currentTimeMillis();
 			if (currentSystemTime > tir.getExp()) {
@@ -475,7 +476,7 @@ public class UserAuthController {
 		}
 		return entity;
 	}
-
+	
 	@GetMapping("/getuseraccountid")
 	public long getUserAccountId(@RequestHeader(HttpHeaders.USER_AGENT) String data) {
 		long useraccountid = -1l;
@@ -490,20 +491,20 @@ public class UserAuthController {
 		}
 		return useraccountid;
 	}	
-
+	
 	@GetMapping("/getuseraccountidheader")
 	public long getUserAccountId(
 			@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, 
 			@RequestHeader(HttpHeaders.USER_AGENT) String data) {	
 		long useraccountid = -1l;
-
+		
 		return useraccountid;
 	}
-
+	
 	private long fetchUserAccountId(UserData data) {
 		long useraccountid = -1l;
 		UserAccountsAuth uaa = new UserAccountsAuth();
-
+		
 		try {	
 			uaa = uaar.getReferenceByUserid(data.getUserid());
 			useraccountid = uaa.getUseraccountid();
