@@ -103,8 +103,8 @@ public class JobsmithController {
 	private JdbcTemplate jdbcTemplate;		
 	
 	@PostMapping("/categories/{type}")
-    public ResponseEntity<CategoryInfoResponse> getCategory(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @PathVariable int type,@RequestBody UserData data)
-    {
+        public ResponseEntity<CategoryInfoResponse> getCategory(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @PathVariable int type,@RequestBody UserData data)
+        {
     	ResponseEntity<CategoryInfoResponse> entity;
     	ResponseEntity<UserInfoResponse> entityUir = null;
     	HttpHeaders headers = new HttpHeaders();
