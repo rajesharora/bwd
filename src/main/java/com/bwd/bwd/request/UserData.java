@@ -15,5 +15,6 @@ public class UserData {
 	private int archived;
 	private String report_status;
 	private int locked;	
-	private String jobsmithReportName;	
+	private String jobsmithReportName;
+	private int companyid;
 }

@@ -85,6 +85,19 @@ public class DBSearch {
 		return objects;
 	}
 	
+	public String getUserAccountId(String query, String field)
+	{
+		String uid = "000";	
+		
+		DBOperation dbop = new DBOperation();
+		
+		System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ "+query+"\n"+field);
+		
+		uid = dbop.executeQuery(query, field);		
+		
+		return uid;
+	}
+	
 	public static void main(String [] args)
 	{
 		DBSearch dbs = new DBSearch();
