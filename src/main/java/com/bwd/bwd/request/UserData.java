@@ -17,4 +17,5 @@ public class UserData {
 	private int locked;	
 	private String jobsmithReportName;
 	private int companyid;
+	private int userlevel;
 }
