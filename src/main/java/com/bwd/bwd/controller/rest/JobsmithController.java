@@ -509,6 +509,8 @@ public class JobsmithController {
 		boolean validAccessToken = false;
 		validAccessToken = jut.isValidAccessToken(data.getUserid());
 
+		int companyid = data.getCompanyid()	;
+		
 		if(validToken)
 		{
 			if(validAccessToken)
@@ -535,7 +537,7 @@ public class JobsmithController {
 							"JOIN jobsmith_permission_tbl jpt ON jup.jobsmith_profileId = jpt.jobsmith_profileId " +
 							"JOIN jobsmith_action_tbl jat ON jpt.jobsmith_actionId = jat.jobsmith_actionId " +
 							"JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid " +
-							"WHERE ua.userid = ? AND jpt.IsPermission = 1";
+							"WHERE ua.userid = ? AND jup.companyid = " + companyid+" AND jpt.IsPermission = 1 AND jup.isAccess = 1";
 					List<Map<String, Object>> permissionData = jdbcTemplate.queryForList(permissionQuery, data.getUserid());
 
 					// Get the endpoint being hit
@@ -827,6 +829,8 @@ public class JobsmithController {
 		boolean validAccessToken = false;
 		validAccessToken = jut.isValidAccessToken(data.getUserid());
 
+		int companyid = data.getCompanyid()	;
+		
 		if(validToken)
 		{
 			if(validAccessToken)
@@ -847,7 +851,7 @@ public class JobsmithController {
 							"JOIN jobsmith_permission_tbl jpt ON jup.jobsmith_profileId = jpt.jobsmith_profileId " +
 							"JOIN jobsmith_action_tbl jat ON jpt.jobsmith_actionId = jat.jobsmith_actionId " +
 							"JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid " +
-							"WHERE ua.userid = ? AND jpt.IsPermission = 1";
+							"WHERE ua.userid = ? AND jup.companyid = " + companyid+" AND jpt.IsPermission = 1  AND jup.isAccess = 1";
 					List<Map<String, Object>> permissionData = jdbcTemplate.queryForList(permissionQuery, data.getUserid());
 
 					// Get the endpoint being hit
@@ -864,20 +868,20 @@ public class JobsmithController {
 
 					if (hasPermission) {
 
-						String profileIdQuery = "SELECT jup.jobsmith_profileId FROM jobsmith_user_profile_tbl jup JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid WHERE userid = ?";
+						String profileIdQuery = "SELECT jup.jobsmith_profileId FROM jobsmith_user_profile_tbl jup JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid WHERE userid = ? AND jup.companyid = " + companyid+" ";
 						List<Map<String, Object>> profileIdData = jdbcTemplate.queryForList(profileIdQuery, data.getUserid());	         	
-						int profileAccountId = (int) profileIdData.get(0).get("jobsmith_profileId");
+						int profileAccountId = (int) profileIdData.get(0).get("jobsmith_profileId");						
 
 						if(profileAccountId==1 || profileAccountId==2) {
 
 							List<SavedJobReport> jpr =  getallDataSavedJobReport(data);
 							jprr.setSavedJobReport(jpr);
 
-						}
-						else {		
+						}else {
 							List<SavedJobReport> jpr =  getarchivedDataSavedJobReport(data);
 							jprr.setSavedJobReport(jpr);
-						}
+							}
+						
 						sr.setValid(true);
 						sr.setStatusCode(1);
 						sr.setMessage("Saved Job Report with Authentic Token ");                	
@@ -959,9 +963,9 @@ public class JobsmithController {
 		String [][]Data;		
 		int companyid = data.getCompanyid()	;
 
-		String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
-		List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
-		Long profileAccountId = (Long) accountIdData.get(0).get("useraccountid");
+		//String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
+		//List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
+		//Long profileAccountId = (Long) accountIdData.get(0).get("useraccountid");
 
 		String sqlQuery = "SELECT \r\n"
 				+ "					jobsmith_reportid, \r\n"
@@ -975,7 +979,7 @@ public class JobsmithController {
 				+ "					INNER JOIN user_accounts b ON b.useraccountid = a.useraccountid \r\n"
 				+ "					INNER JOIN jobsmith_user_profile_tbl c ON c.useraccountid = b.useraccountid\r\n"
 				+ "				WHERE \r\n"
-				+ "					archived = 0 AND a.companyid = " + companyid+" AND a.useraccountid = " + profileAccountId+" AND report_status IN ('Draft', 'LIVE') AND c.companyid = a.companyid AND c.isAccess = 0";
+				+ "					archived = 0 AND a.companyid = " + companyid+" AND report_status IN ('Draft', 'LIVE') AND c.companyid = a.companyid ORDER BY jobsmith_report_name";
 		System.out.println(sqlQuery);
 		System.out.println("??????????????????????????????????????");
 		dbop.setSelectQuery(sqlQuery);		
@@ -991,6 +995,8 @@ public class JobsmithController {
 
 		return listJPR;
 	}
+	
+	
 
 	public List<SavedJobReport> getallDataSavedJobReport(UserData data)
 	{
@@ -999,15 +1005,15 @@ public class JobsmithController {
 		String [][]Data;		
 		int companyid = data.getCompanyid()	;
 
-		String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
-		List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
-		Long profileAccountId = (Long) accountIdData.get(0).get("useraccountid");
+		//String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
+		//List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
+		//Long profileAccountId = (Long) accountIdData.get(0).get("useraccountid");
 
 		String sqlQuery = "SELECT jobsmith_reportid, jobsmith_report_name, report_status, CONCAT (b.firstname, ' ', b.lastname) AS CREATEBY, "
 				+ "					DATE_FORMAT(a.date_modifed, '%Y-%m-%d %h:%i %p') AS date_modifed, locked FROM jobsmith_report_tbl a \r\n"
 				+ "    INNER JOIN user_accounts b ON b.useraccountid = a.useraccountid \r\n"
 				+ "    INNER JOIN jobsmith_user_profile_tbl c ON c.useraccountid = b.useraccountid \r\n"
-				+ "				WHERE archived = 0  AND a.companyid = " + companyid+" AND a.useraccountid = " + profileAccountId+" AND c.companyid = a.companyid AND c.isAccess = 0";
+				+ "				WHERE archived = 0  AND a.companyid = " + companyid+" AND c.companyid = a.companyid ORDER BY jobsmith_report_name";
 		System.out.println(sqlQuery);
 
 		dbop.setSelectQuery(sqlQuery);		
@@ -1036,9 +1042,7 @@ public class JobsmithController {
 		SavedJobReportsExpansionResponse jprr = new SavedJobReportsExpansionResponse();
 
 		UserAccountsAuth uaa = new UserAccountsAuth();
-		UserDataResponse udr = new UserDataResponse();
-		UserInfoResponse uir = new UserInfoResponse();
-
+		
 		UserInfo ui = new UserInfo();    	
 
 		boolean validToken = false;
@@ -1182,9 +1186,7 @@ public class JobsmithController {
 		PreMadeReportResponse jprr = new PreMadeReportResponse();
 
 		UserAccountsAuth uaa = new UserAccountsAuth();
-		UserDataResponse udr = new UserDataResponse();
-		UserInfoResponse uir = new UserInfoResponse();
-
+	
 		UserInfo ui = new UserInfo();    	
 
 		boolean validToken = false;
@@ -1345,6 +1347,8 @@ public class JobsmithController {
 		JwtUserToken jut = new JwtUserToken();
 		boolean validAccessToken = false;
 		validAccessToken = jut.isValidAccessToken(data.getUserid());
+		
+		int companyid = data.getCompanyid()	;
 
 		if(validToken)
 		{
@@ -1366,7 +1370,7 @@ public class JobsmithController {
 							"JOIN jobsmith_permission_tbl jpt ON jup.jobsmith_profileId = jpt.jobsmith_profileId " +
 							"JOIN jobsmith_action_tbl jat ON jpt.jobsmith_actionId = jat.jobsmith_actionId " +
 							"JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid " +
-							"WHERE ua.userid = ? AND jpt.IsPermission = 1";
+							"WHERE ua.userid = ? AND jup.companyid = " + companyid+" AND jpt.IsPermission = 1 AND jup.isAccess = 1";
 					List<Map<String, Object>> permissionData = jdbcTemplate.queryForList(permissionQuery, data.getUserid());
 
 					// Get the endpoint being hit
@@ -1509,6 +1513,8 @@ public class JobsmithController {
 		JwtUserToken jut = new JwtUserToken();
 		boolean validAccessToken = false;
 		validAccessToken = jut.isValidAccessToken(data.getUserid());
+		
+		int companyid = data.getCompanyid()	;
 
 		if(validToken)
 		{
@@ -1530,7 +1536,7 @@ public class JobsmithController {
 							"JOIN jobsmith_permission_tbl jpt ON jup.jobsmith_profileId = jpt.jobsmith_profileId " +
 							"JOIN jobsmith_action_tbl jat ON jpt.jobsmith_actionId = jat.jobsmith_actionId " +
 							"JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid " +
-							"WHERE ua.userid = ? AND jpt.IsPermission = 1";
+							"WHERE ua.userid = ? AND jup.companyid = " + companyid+" AND jpt.IsPermission = 1 AND jup.isAccess = 1";
 					List<Map<String, Object>> permissionData = jdbcTemplate.queryForList(permissionQuery, data.getUserid());
 
 					// Get the endpoint being hit
@@ -1670,6 +1676,8 @@ public class JobsmithController {
 		JwtUserToken jut = new JwtUserToken();
 		boolean validAccessToken = false;
 		validAccessToken = jut.isValidAccessToken(data.getUserid());
+		
+		int companyid = data.getCompanyid()	;
 
 		if(validToken)
 		{
@@ -1690,7 +1698,7 @@ public class JobsmithController {
 							"JOIN jobsmith_permission_tbl jpt ON jup.jobsmith_profileId = jpt.jobsmith_profileId " +
 							"JOIN jobsmith_action_tbl jat ON jpt.jobsmith_actionId = jat.jobsmith_actionId " +
 							"JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid " +
-							"WHERE ua.userid = ? AND jpt.IsPermission = 1";
+							"WHERE ua.userid = ? AND jup.companyid = " + companyid+" AND jpt.IsPermission = 1 AND jup.isAccess = 1";
 					List<Map<String, Object>> permissionData = jdbcTemplate.queryForList(permissionQuery, data.getUserid());
 
 					// Get the endpoint being hit
@@ -1836,6 +1844,8 @@ public class JobsmithController {
 		boolean validAccessToken = false;
 		validAccessToken = jut.isValidAccessToken(data.getUserid());
 
+		int companyid = data.getCompanyid()	;
+
 		if(validToken)
 		{
 			if(validAccessToken)
@@ -1855,7 +1865,7 @@ public class JobsmithController {
 							"JOIN jobsmith_permission_tbl jpt ON jup.jobsmith_profileId = jpt.jobsmith_profileId " +
 							"JOIN jobsmith_action_tbl jat ON jpt.jobsmith_actionId = jat.jobsmith_actionId " +
 							"JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid " +
-							"WHERE ua.userid = ? AND jpt.IsPermission = 1";
+							"WHERE ua.userid = ? AND jup.companyid = " + companyid+" AND jpt.IsPermission = 1 AND jup.isAccess = 1";
 					List<Map<String, Object>> permissionData = jdbcTemplate.queryForList(permissionQuery, data.getUserid());
 
 					// Get the endpoint being hit
@@ -1871,19 +1881,21 @@ public class JobsmithController {
 					}
 
 					if (hasPermission) {
-						String profileIdQuery = "SELECT jup.jobsmith_profileId FROM jobsmith_user_profile_tbl jup JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid WHERE userid = ?";
+						String profileIdQuery = "SELECT jup.jobsmith_profileId FROM jobsmith_user_profile_tbl jup JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid WHERE userid = ? AND jup.companyid = " + companyid ;
 						List<Map<String, Object>> profileIdData = jdbcTemplate.queryForList(profileIdQuery, data.getUserid());	         	
 						int profileAccountId = (int) profileIdData.get(0).get("jobsmith_profileId");
 
+						System.out.println(profileAccountId+"................................................");
+						
 						if(profileAccountId==1 || profileAccountId==2) {
 
 							List<SavedJobReport> jpr = getallDataSearchJobReport(data);
 							jprr.setSavedJobReport(jpr);
 						}
-						else {
-							List<SavedJobReport> jpr = getarchivedDataSearchJobReport(data);
+						else {					
+							List<SavedJobReport> jpr = getArchivedDataSearchJobReport(data);
 							jprr.setSavedJobReport(jpr);
-						}
+							}						
 
 						sr.setValid(true);
 						sr.setStatusCode(1);
@@ -1960,8 +1972,7 @@ public class JobsmithController {
 	}
 	
 	
-
-	public List<SavedJobReport> getarchivedDataSearchJobReport(UserData data)
+	public List<SavedJobReport> getArchivedDataSearchJobReport(UserData data)
 	{
 		DBOperation dbop = new DBOperation();
 		List<SavedJobReport> listJPR = new ArrayList<>();
@@ -1969,9 +1980,9 @@ public class JobsmithController {
 		int companyid = data.getCompanyid();
 		String jobsmith_report_name = data.getJobsmithReportName()	;
 
-		String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
-		List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
-		Long profileAccountId = (Long) accountIdData.get(0).get("useraccountid");
+		//String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
+		//List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
+		//Long profileAccountId = (Long) accountIdData.get(0).get("useraccountid");
 
 		String sqlQuery = "SELECT \n" +
 				"    jobsmith_reportid, \n" +
@@ -1982,10 +1993,12 @@ public class JobsmithController {
 				"    locked \n" +
 				"FROM \n" +
 				"    jobsmith_report_tbl a \n" +
-				"    INNER JOIN user_accounts b ON b.useraccountid = a.useraccountid \n" +
+				"    INNER JOIN user_accounts b ON b.useraccountid = a.useraccountid "	+ 
 				"   INNER JOIN jobsmith_user_profile_tbl c ON c.useraccountid = b.useraccountid \n" +
 				"WHERE \n" +
-				" archived = 0 AND jobsmith_report_name LIKE '%" + jobsmith_report_name + "%' AND report_status IN ('Draft', 'LIVE') AND a.companyid = " + companyid+" AND a.useraccountid = " + profileAccountId+"";
+				" archived = 0 AND jobsmith_report_name LIKE '%" + jobsmith_report_name + "%' AND a.companyid = " + companyid+" AND c.companyid = a.companyid AND report_status IN ('Draft', 'LIVE')";
+		
+		System.out.println("..........................................................");
 
 		System.out.println(sqlQuery);
 		dbop.setSelectQuery(sqlQuery);		
@@ -2009,9 +2022,9 @@ public class JobsmithController {
 		int companyid = data.getCompanyid()	;
 		String jobsmith_report_name = data.getJobsmithReportName()	;
 
-		String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
-		List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
-		Long profileAccountId = (Long) accountIdData.get(0).get("useraccountid");
+		//String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
+		//List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
+		//Long profileAccountId = (Long) accountIdData.get(0).get("useraccountid");
 		String sqlQuery = "SELECT \n" +
 				"    jobsmith_reportid, \n" +
 				"    jobsmith_report_name, \n" +
@@ -2024,7 +2037,7 @@ public class JobsmithController {
 				"    INNER JOIN user_accounts b ON b.useraccountid = a.useraccountid "	+ 
 				"   INNER JOIN jobsmith_user_profile_tbl c ON c.useraccountid = b.useraccountid \n" +
 				"WHERE \n" +
-				" archived = 0 AND jobsmith_report_name LIKE '%" + jobsmith_report_name + "%' AND a.companyid = " + companyid+" AND a.useraccountid = " + profileAccountId+"";
+				" archived = 0 AND jobsmith_report_name LIKE '%" + jobsmith_report_name + "%' AND a.companyid = " + companyid+" AND c.companyid = a.companyid";
 
 		System.out.println(sqlQuery);
 		dbop.setSelectQuery(sqlQuery);		
@@ -2074,6 +2087,8 @@ public class JobsmithController {
 		JwtUserToken jut = new JwtUserToken();
 		boolean validAccessToken = false;
 		validAccessToken = jut.isValidAccessToken(data.getUserid());
+		
+		int companyid = data.getCompanyid()	;
 
 		if(validToken)
 		{
@@ -2094,7 +2109,7 @@ public class JobsmithController {
 							"JOIN jobsmith_permission_tbl jpt ON jup.jobsmith_profileId = jpt.jobsmith_profileId " +
 							"JOIN jobsmith_action_tbl jat ON jpt.jobsmith_actionId = jat.jobsmith_actionId " +
 							"JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid " +
-							"WHERE ua.userid = ? AND jpt.IsPermission = 1";
+							"WHERE ua.userid = ? AND jup.companyid = " + companyid+" AND jpt.IsPermission = 1 AND jup.isAccess = 1";
 					List<Map<String, Object>> permissionData = jdbcTemplate.queryForList(permissionQuery, data.getUserid());
 
 					// Get the endpoint being hit
@@ -2111,7 +2126,7 @@ public class JobsmithController {
 
 					if (hasPermission) {
 
-						int companyid = data.getCompanyid();
+						//int companyid = data.getCompanyid();
 						System.out.println(companyid);
 						String profileIdQuery = "SELECT jup.jobsmith_profileId FROM jobsmith_user_profile_tbl jup JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid WHERE userid = ?";
 						List<Map<String, Object>> profileIdData = jdbcTemplate.queryForList(profileIdQuery, data.getUserid());	         	
@@ -2354,7 +2369,7 @@ public class JobsmithController {
 
 
 	@PostMapping("/editjobsmithreports")
-	public  ResponseEntity<ResponseSaveJobsmithReports>  editJobsmithReports(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @RequestBody JobsmithReportRequest data){
+	public  ResponseEntity<ResponseSaveJobsmithReports>  editJobsmithReports(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @RequestBody JobsmithReportRequest data, HttpServletRequest request){
 		String message = "";
 		DBUpdate dbu = new DBUpdate();
 
@@ -2365,8 +2380,6 @@ public class JobsmithController {
 		StatusResponse sr = new StatusResponse();
 
 		UserAccountsAuth uaa = new UserAccountsAuth();
-		UserDataResponse udr = new UserDataResponse();
-		UserInfoResponse uir = new UserInfoResponse();
 
 		UserInfo ui = new UserInfo();    	
 
@@ -2377,6 +2390,8 @@ public class JobsmithController {
 		JwtUserToken jut = new JwtUserToken();
 		boolean validAccessToken = false;
 		validAccessToken = jut.isValidAccessToken(data.getUserid());
+		
+		int companyid = data.getCompanyid()	;
 
 		if(validToken)
 		{
@@ -2390,123 +2405,156 @@ public class JobsmithController {
 					ui.setLastname(uaa.getLastname());
 					ui.setStatus(uaa.getStatus());
 					ui.setStatusdate(uaa.getStatusdate());  
-					
-					String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
-					List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
-					Long useraccountId = (Long) accountIdData.get(0).get("useraccountid");
-					int useraccountIdInt = useraccountId.intValue();
-					
-					data.setUseraccountid(useraccountIdInt);
 
-					dbu.updateRecord(data);				
-					int id = data.getJobsmith_reportid();
+					// Check permission
+					String permissionQuery = "SELECT jat.jobsmith_actionId, jat.jobsmith_functional_endpoint " +
+							"FROM jobsmith_user_profile_tbl jup " +
+							"JOIN jobsmith_permission_tbl jpt ON jup.jobsmith_profileId = jpt.jobsmith_profileId " +
+							"JOIN jobsmith_action_tbl jat ON jpt.jobsmith_actionId = jat.jobsmith_actionId " +
+							"JOIN user_accounts ua ON jup.useraccountid = ua.useraccountid " +
+							"WHERE ua.userid = ? AND jup.companyid = " + companyid+" AND jpt.IsPermission = 1 AND jup.isAccess = 1";
+					List<Map<String, Object>> permissionData = jdbcTemplate.queryForList(permissionQuery, data.getUserid());
 
-					ArrayList<Critical> ar = data.getCritical();		
-					Iterator itr = ar.iterator();
-					System.out.println("Size of Critical : "+ar.size());
-					while (itr.hasNext())
-					{   
-						JobsmithReportCapability jrc = new JobsmithReportCapability();   
+					// Get the endpoint being hit
+					String endpoint = request.getRequestURI(); // Adjust this based on your endpoint structure
 
-						Critical ob = (Critical) itr.next();  
-
-						if(ob.getEditstatus() == 0)
-						{
-
-							jrcr.save(jrc.createJobsmithReportCapability(id,Integer.parseInt(ob.getCapabilityid()),ob.getWeightage(),Integer.parseInt(ob.getSequence())));
-							jrcr.flush();
-							System.out.println("Record added block : "+sr.getMessage());
-						}else if(ob.getEditstatus() == -9)
-						{
-							JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
-							jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
-							sr = dbu.updateRecord(jrre, true);
-							System.out.println("Record deleted block : "+sr.getMessage());
-						}else if(ob.getEditstatus() == -1)
-						{
-							JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
-							jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
-							sr = dbu.updateRecord(jrre, false);
-							System.out.println("Record update block : "+sr.getMessage());
-						}else
-						{
-							System.out.println("Nothing to do anything");
+					boolean hasPermission = false;
+					for (Map<String, Object> row : permissionData) {
+						String functionalEndpoint = (String) row.get("jobsmith_functional_endpoint");						
+						if (functionalEndpoint.equals(endpoint)) {
+							hasPermission = true;
+							break;
 						}
 					}
 
-					ArrayList<Important> ari = data.getImportant();		
-					Iterator itri = ari.iterator();
-					System.out.println("Size of Critical : "+ari.size());
-					while (itri.hasNext())
-					{   
-						JobsmithReportCapability jrc = new JobsmithReportCapability();    	
-						Important ob = (Important) itri.next();  
+					if (hasPermission) {					
 
-						if(ob.getEditstatus() == 0)
-						{
-							jrcr.save(jrc.createJobsmithReportCapability(id,Integer.parseInt(ob.getCapabilityid()),ob.getWeightage(),Integer.parseInt(ob.getSequence())));
-							jrcr.flush();
-							System.out.println("Record added block : "+sr.getMessage());
-						}else if(ob.getEditstatus() == -9)
-						{
-							JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
-							jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
-							sr = dbu.updateRecord(jrre, true);
-							System.out.println("Record deleted block : "+sr.getMessage());
-						}else if(ob.getEditstatus() == -1)
-						{
-							JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
-							jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
-							sr = dbu.updateRecord(jrre, false);
-							System.out.println("Record update block : "+sr.getMessage());
-						}else
-						{
-							System.out.println("Nothing to do anything");
-						}				
-					}  
+						String accountIdQuery = "SELECT ua.useraccountid FROM user_accounts ua JOIN jobsmith_report_tbl jrt ON ua.useraccountid = jrt.useraccountid WHERE userid = ?";
+						List<Map<String, Object>> accountIdData = jdbcTemplate.queryForList(accountIdQuery, data.getUserid());	         	
+						Long useraccountId = (Long) accountIdData.get(0).get("useraccountid");
+						int useraccountIdInt = useraccountId.intValue();
 
-					ArrayList<Nicetohave> arn = data.getNicetohave();		
-					Iterator itrn = arn.iterator();
-					System.out.println("Size of Critical : "+ar.size());
-					while (itrn.hasNext())
-					{   
-						JobsmithReportCapability jrc = new JobsmithReportCapability();    	
-						Nicetohave ob = (Nicetohave) itrn.next();        	
+						data.setUseraccountid(useraccountIdInt);
 
-						if(ob.getEditstatus() == 0)
-						{
-							jrcr.save(jrc.createJobsmithReportCapability(id,Integer.parseInt(ob.getCapabilityid()),ob.getWeightage(),Integer.parseInt(ob.getSequence())));
-							jrcr.flush();
-							System.out.println("Record added block : "+sr.getMessage());
-						}else if(ob.getEditstatus() == -9)
-						{
-							JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
-							jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
-							sr = dbu.updateRecord(jrre, true);
-							System.out.println("Record deleted block : "+sr.getMessage());
-						}else if(ob.getEditstatus() == -1)
-						{
-							JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
-							jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
-							sr = dbu.updateRecord(jrre, false);
-							System.out.println("Record update block : "+sr.getMessage());
-						}else
-						{
-							System.out.println("Nothing to do anything");
+						dbu.updateRecord(data);				
+						int id = data.getJobsmith_reportid();
+
+						ArrayList<Critical> ar = data.getCritical();		
+						Iterator itr = ar.iterator();
+						System.out.println("Size of Critical : "+ar.size());
+						while (itr.hasNext())
+						{   
+							JobsmithReportCapability jrc = new JobsmithReportCapability();   
+
+							Critical ob = (Critical) itr.next();  
+
+							if(ob.getEditstatus() == 0)
+							{
+
+								jrcr.save(jrc.createJobsmithReportCapability(id,Integer.parseInt(ob.getCapabilityid()),ob.getWeightage(),Integer.parseInt(ob.getSequence())));
+								jrcr.flush();
+								System.out.println("Record added block : "+sr.getMessage());
+							}else if(ob.getEditstatus() == -9)
+							{
+								JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
+								jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
+								sr = dbu.updateRecord(jrre, true);
+								System.out.println("Record deleted block : "+sr.getMessage());
+							}else if(ob.getEditstatus() == -1)
+							{
+								JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
+								jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
+								sr = dbu.updateRecord(jrre, false);
+								System.out.println("Record update block : "+sr.getMessage());
+							}else
+							{
+								System.out.println("Nothing to do anything");
+							}
 						}
 
-					}  
+						ArrayList<Important> ari = data.getImportant();		
+						Iterator itri = ari.iterator();
+						System.out.println("Size of Critical : "+ari.size());
+						while (itri.hasNext())
+						{   
+							JobsmithReportCapability jrc = new JobsmithReportCapability();    	
+							Important ob = (Important) itri.next();  
 
-					message = "Job report saved successfully = "+id;    
+							if(ob.getEditstatus() == 0)
+							{
+								jrcr.save(jrc.createJobsmithReportCapability(id,Integer.parseInt(ob.getCapabilityid()),ob.getWeightage(),Integer.parseInt(ob.getSequence())));
+								jrcr.flush();
+								System.out.println("Record added block : "+sr.getMessage());
+							}else if(ob.getEditstatus() == -9)
+							{
+								JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
+								jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
+								sr = dbu.updateRecord(jrre, true);
+								System.out.println("Record deleted block : "+sr.getMessage());
+							}else if(ob.getEditstatus() == -1)
+							{
+								JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
+								jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
+								sr = dbu.updateRecord(jrre, false);
+								System.out.println("Record update block : "+sr.getMessage());
+							}else
+							{
+								System.out.println("Nothing to do anything");
+							}				
+						}  
 
-					sr.setValid(true);
-					sr.setStatusCode(1);
-					sr.setMessage(message);    	
-					
-					rsjr.setStatus(sr);
+						ArrayList<Nicetohave> arn = data.getNicetohave();		
+						Iterator itrn = arn.iterator();
+						System.out.println("Size of Critical : "+ar.size());
+						while (itrn.hasNext())
+						{   
+							JobsmithReportCapability jrc = new JobsmithReportCapability();    	
+							Nicetohave ob = (Nicetohave) itrn.next();        	
 
-					entity = new ResponseEntity<>(rsjr, headers, HttpStatus.OK);					
+							if(ob.getEditstatus() == 0)
+							{
+								jrcr.save(jrc.createJobsmithReportCapability(id,Integer.parseInt(ob.getCapabilityid()),ob.getWeightage(),Integer.parseInt(ob.getSequence())));
+								jrcr.flush();
+								System.out.println("Record added block : "+sr.getMessage());
+							}else if(ob.getEditstatus() == -9)
+							{
+								JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
+								jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
+								sr = dbu.updateRecord(jrre, true);
+								System.out.println("Record deleted block : "+sr.getMessage());
+							}else if(ob.getEditstatus() == -1)
+							{
+								JobsmithReportRequestEdit jrre = new JobsmithReportRequestEdit();
+								jrre = jrre.createObject(ob.getJobsmith_report_capabilityid(), id,ob.getCapabilityid(),ob.getWeightage(),ob.getSequence());
+								sr = dbu.updateRecord(jrre, false);
+								System.out.println("Record update block : "+sr.getMessage());
+							}else
+							{
+								System.out.println("Nothing to do anything");
+							}
 
+						}  
+
+						message = "Job report saved successfully = "+id;    
+
+						sr.setValid(true);
+						sr.setStatusCode(1);
+						sr.setMessage(message);    	
+
+						rsjr.setStatus(sr);
+
+						entity = new ResponseEntity<>(rsjr, headers, HttpStatus.OK);					
+					}
+					else
+					{
+						// User doesn't have permission to update this report
+						sr.setValid(false);
+						sr.setStatusCode(0);
+						sr.setMessage("User doesn't have permission to get other user report");
+						rsjr.setData(null);
+						rsjr.setStatus(sr);
+						entity = new ResponseEntity<>(rsjr, headers, HttpStatus.FORBIDDEN);
+					}
 				}catch (Exception ex) {
 					ex.printStackTrace();
 					System.out.println(ex.getMessage());			
@@ -2640,6 +2688,5 @@ public class JobsmithController {
 
 		return entity;
 	}
-	
 	
 }

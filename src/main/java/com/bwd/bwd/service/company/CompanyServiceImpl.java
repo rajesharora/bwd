@@ -44,7 +44,7 @@ public class CompanyServiceImpl implements CompanyServices{
 
 			for(int i=0;i<=dbop.getNumberOfRow();i++)
 			{
-				String query = "SELECT c.companyid, c.companyname, c.whitelabel, c.type FROM company c";
+				String query = "SELECT c.companyid, c.companyname, c.whitelabel, c.type FROM company c ORDER BY c.companyname";
 
 				dbop.setSelectQuery(query);
 				dbop.executeSelectQuery();
@@ -68,7 +68,7 @@ public class CompanyServiceImpl implements CompanyServices{
 					for(int i=0;i<=dbop.getNumberOfRow();i++)
 					{
 						String query = "SELECT c.companyid, c.companyname, c.whitelabel, c.type"
-								+ " FROM company c, user_association ua  WHERE c.companyid = ua.companyid AND ua.accesslevel != 0 And ua.useraccountid ="+profileAccountId;
+								+ " FROM company c, user_association ua  WHERE c.companyid = ua.companyid AND ua.accesslevel != 0 And ua.useraccountid ="+profileAccountId+" ORDER BY c.companyname";
 
 						dbop.setSelectQuery(query);
 						dbop.executeSelectQuery();

@@ -59,7 +59,7 @@ DBConnection dbc = null;
 	        // Use a prepared statement to avoid SQL injection
 	        String sqlUpdate = "UPDATE jobsmith_report_tbl a "
 	        		+ "INNER JOIN user_accounts b ON a.useraccountid = b.useraccountid "
-	        		+ "INNER JOIN jobsmith_user_profile_tbl c ON b.useraccountid = c.useraccountid SET archived = " + newArchive+" WHERE a.jobsmith_reportid = "+ jobsmithReportId+" AND c.companyid ="+companyid;
+	        		+ "INNER JOIN jobsmith_user_profile_tbl c ON b.useraccountid = c.useraccountid SET archived = " + newArchive+" WHERE a.jobsmith_reportid = "+ jobsmithReportId+" AND c.companyid ="+companyid+" AND c.isAccess = 1";
 	        System.out.println(sqlUpdate);
 	        dbop.updateRecord(sqlUpdate);
 	        
@@ -102,7 +102,7 @@ DBConnection dbc = null;
 	        // Use a prepared statement to avoid SQL injection
 	        String sqlUpdate =  "UPDATE jobsmith_report_tbl a "
 	        		+ "INNER JOIN user_accounts b ON a.useraccountid = b.useraccountid "
-	        		+ "INNER JOIN jobsmith_user_profile_tbl c ON b.useraccountid = c.useraccountid SET report_status = '" + reportStatus+"', status_date=current_timestamp  WHERE a.jobsmith_reportid = "+ jobsmithReportId+" AND c.companyid ="+companyid;
+	        		+ "INNER JOIN jobsmith_user_profile_tbl c ON b.useraccountid = c.useraccountid SET report_status = '" + reportStatus+"', status_date=current_timestamp  WHERE a.jobsmith_reportid = "+ jobsmithReportId+" AND c.companyid ="+companyid+" AND c.isAccess = 1";
 	        System.out.println(sqlUpdate);
 	        dbop.updateRecord(sqlUpdate);
 	        
@@ -184,7 +184,7 @@ DBConnection dbc = null;
 	        // Use a prepared statement to avoid SQL injection
 	        String sqlUpdate = "UPDATE jobsmith_report_tbl a "
 	        		+ "INNER JOIN user_accounts b ON a.useraccountid = b.useraccountid " 
-	        		+ "INNER JOIN jobsmith_user_profile_tbl c ON b.useraccountid = c.useraccountid SET a.locked = " + newLocked+" WHERE a.jobsmith_reportid = "+ jobsmithReportId+" AND c.companyid ="+companyid;
+	        		+ "INNER JOIN jobsmith_user_profile_tbl c ON b.useraccountid = c.useraccountid SET a.locked = " + newLocked+" WHERE a.jobsmith_reportid = "+ jobsmithReportId+" AND c.companyid ="+companyid+" AND c.isAccess = 1";
 	        System.out.println(sqlUpdate);
 	        dbop.updateRecord(sqlUpdate);
 	        
