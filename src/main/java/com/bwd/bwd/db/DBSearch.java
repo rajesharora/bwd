@@ -8,7 +8,10 @@ import java.util.List;
 
 import com.bwd.bwd.model.jobsmith.JobSearchResult;
 import com.bwd.bwd.model.jobsmith.Reports;
+import com.bwd.bwd.request.UserData;
 import com.bwd.bwd.response.JobTitleResponse;
+import com.bwd.bwd.response.PermissionResponse;
+import com.bwd.bwd.response.SavedJobReport;
 
 public class DBSearch {
 	
